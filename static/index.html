@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Price Tracker</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+        integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <style>
+        .vcenter {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        body {
+            background-color: #333333;
+            color: WHITE;
+            font-size: large;
+        }
+
+        .red {
+            color: red;
+        }
+
+        .button {
+            width: 8em;
+            margin: auto;
+            padding: 0.7em;
+            max-width: 400px;
+            background-color: red;
+            color: white;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.125em;
+            border: none;
+            transition: all 0.5s ease;
+            box-shadow: 0 0 5px #1c1c1c40;
+            position: relative;
+        }
+
+        .formbhanu {
+            width: 65%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="vcenter">
+            <h1>
+                <strong>
+                    <span class = "red"> Price </span><span> Tracker</span>
+                </strong>
+            </h1>
+            <form class="formbhanu" action="/fetchPrice" method="POST">
+                <div class="form-group ">
+                    <label for="exampleInputEmail1">Email address</label>
+                    <input type="email" required class="form-control" id="email" aria-describedby="emailHelp">
+                    <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone
+                        else.</small>
+                </div>
+                <div class="form-group">
+                    <label for="url">Amazon URL</label>
+                    <input type="url" required class="form-control" id="url">
+                </div>
+                <button type="button" onclick="func()" class="button">Submit</button>
+            </form>
+            <div id="status">
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    function func() {
+        var email = document.getElementById("email").value;
+        var url = document.getElementById("url").value;
+        var s = document.getElementById("status");
+        s.innerHTML="Please wait, sending request!";
+        console.log(email);
+        console.log(url);
+        if (email == '' || url == '') {
+            s.innerHTML = "Please enter email and URL";
+            return;
+        }
+
+        fetch('/fetchPrice', {
+            method: 'POST', // or 'PUT'
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ "email": email, "url": url }),
+        }).then(response => {
+            if (response.status == 200) {
+                s.innerHTML = "You are already signed up for updates";
+                console.log("You are already signed up for updates");
+            }
+            else if (response.status == 500) {
+                s.innerHTML = "There was an internal server error";
+                console.log("There was an internal server error");
+            }
+            else if (response.status == 302) {
+                s.innerHTML = "Saved!";
+                console.log("Saved!");
+            }
+        }).catch((err)=>console.log(err))
+    }
+</script>
+
+</html>
