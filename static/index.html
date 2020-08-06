@@ -52,7 +52,7 @@
         <div class="vcenter">
             <h1>
                 <strong>
-                    <span class = "red"> Price </span><span> Tracker</span>
+                    <span class="red"> Price </span><span> Tracker</span>
                 </strong>
             </h1>
             <form class="formbhanu" action="/fetchPrice" method="POST">
@@ -78,7 +78,7 @@
         var email = document.getElementById("email").value;
         var url = document.getElementById("url").value;
         var s = document.getElementById("status");
-        s.innerHTML="Please wait, sending request!";
+        s.innerHTML = "Please wait, sending request!";
         console.log(email);
         console.log(url);
         if (email == '' || url == '') {
@@ -105,7 +105,7 @@
                 s.innerHTML = "Saved!";
                 console.log("Saved!");
             }
-        }).catch((err)=>console.log(err))
+        }).catch((err) => console.log(err))
     }
 </script>
 

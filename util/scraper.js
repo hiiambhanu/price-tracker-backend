@@ -12,9 +12,12 @@ exports.scrapePrice = (url) => {
         axios.get(url)
             .then((resp) => {
                 const $ = cheerio.load(resp.data);
-                reply = $("#priceblock_ourprice").text();
-                reply = reply.slice(1, reply.length).trim().replace(',', '');
-                // console.log(reply);
+                reply1 = $("#priceblock_ourprice").text();
+                reply2 = $("#priceblock_dealprice").text();
+                reply1 = reply1.slice(1, reply1.length).trim().replace(',', '');
+                reply2 = reply2.slice(1, reply2.length).trim().replace(',', '');
+                var reply = Math.min(parseInt(reply1), parseInt(reply2));
+                console.log(reply);
                 resolve({
                     reply: reply
                 });
