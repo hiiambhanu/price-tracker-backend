@@ -18,13 +18,11 @@ exports.scrapePrice = (url) => {
                 reply2 = reply2.slice(1, reply2.length).trim().replace(',', '');
                 reply1 = parseInt(reply1);
                 reply2 = parseInt(reply2);
-                if(reply2 == NaN){
-                    reply2 = Infinity;
-                }
+                reply2 = Number.isNaN(reply2) ? Infinity : reply2;
                 var reply = Math.min(reply1, reply2);
                 console.log(reply);
                 resolve({
-                    reply: reply
+                    reply: reply1
                 });
             })
             .catch((err) => reject({
