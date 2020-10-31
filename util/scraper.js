@@ -1,8 +1,9 @@
 const cheerio = require("cheerio");
 const axios = require("axios");
 
-const { isNullOrUndefined } = require('util');
-
+const isNullOrUndefined = (item) =>{
+    return (item === null || item === undefined); 
+}
 exports.scrapePrice = (url) => {
     return new Promise((resolve, reject) => {
         if (isNullOrUndefined(url)) reject({
@@ -18,11 +19,13 @@ exports.scrapePrice = (url) => {
                 reply2 = reply2.slice(1, reply2.length).trim().replace(',', '');
                 reply1 = parseInt(reply1);
                 reply2 = parseInt(reply2);
+                reply1 = Number.isNaN(reply1) ? Infinity : reply1;
                 reply2 = Number.isNaN(reply2) ? Infinity : reply2;
+                // console.log(reply1, reply2)
                 var reply = Math.min(reply1, reply2);
-                console.log(reply);
+                // console.log("here", reply);
                 resolve({
-                    reply: reply1
+                    reply: reply
                 });
             })
             .catch((err) => reject({

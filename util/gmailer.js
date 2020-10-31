@@ -52,6 +52,7 @@ exports.sendMessage = async(to, message) => {
 
 
 function sendMessage(userId, email, to, message) {
+  if( Number.isNaN(message.price)) return console.log("NaN was the price");
   console.log("called")
   email = Base64.btoa(
     "From: hiiambhanu@gmail.com\r\n" +
@@ -68,8 +69,8 @@ function sendMessage(userId, email, to, message) {
     'resource': {
       'raw': email
     }
-  }).then((resp) => console.log(resp))
-    .catch((err) => console.log(err));
+  }).then((resp) => console.log("resp"))
+    .catch((err) => console.log("error in gmailer", err));
 }
 
 

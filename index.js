@@ -5,7 +5,6 @@ var bodyParser = require('body-parser')
 const port = process.env.PORT || 3000
 require('dotenv').config()
 const cors = require("cors");
-const { isNullOrUndefined } = require('util');
 const path = require("path");
 const mongoose = require("mongoose");
 app.use('/static', express.static(path.join(__dirname, 'public')))
@@ -34,17 +33,12 @@ db.once('open', function () {
 const productSchema = new mongoose.Schema({
     _id: String,
     minPrice: Number,
-    emails: [],
+    emails: [{ email: String, budget:  Number }],
     prices: [{ date: Date, price: Number }],
 });
 
 const product = mongoose.model('product', productSchema);
 
-app.get('/checkmailer', (req, res) => {
-    var email = "bhanupratapsinghdbs@gmail.com";
-    Gmailer.sendMessage(email, { price: 69, url: "www.example.com" });
-    res.sendStatus(200);
-})
 
 app.get('/', (req, res) => {
     res.sendFile('./static/index.html', { root: __dirname });
@@ -52,7 +46,7 @@ app.get('/', (req, res) => {
 
 app.get('/fetchPrice', async (req, res) => {
     var url = req.query.url;
-    if (isNullOrUndefined(url)) res.sendStatus(404);
+    if (url === null || url === undefined) res.sendStatus(404);
     var scraped = Scraper.scrapePrice(url);
     scraped.then((resp) => {
         console.log("scraped " + resp);
@@ -66,7 +60,9 @@ app.get('/fetchPrice', async (req, res) => {
 app.post('/fetchPrice', (req, res) => {
     var url = req.body.url;
     var email = req.body.email;
-    if (isNullOrUndefined(url)) {
+    var budget = req.body.budget;
+    budget = 0;
+    if (url === null || url === undefined) {
         console.log("Empty URL");
         res.sendStatus(BADQUERY);
     }
@@ -76,12 +72,15 @@ app.post('/fetchPrice', (req, res) => {
             console.log(error);
             res.sendStatus(500);
         }
-        else if (!isNullOrUndefined(item)) {
+        else if (!(item === null || item === undefined)) {
             console.log("item was in the db");
-            if (item.emails.includes(email)) res.sendStatus(200);
+            var id = item.emails.findIndex((e, id)=>{
+                if(e.email == email) return true;
+            });
+            if (id != -1) res.sendStatus(200);
             else {
-                item.emails.push(email);
-                product.updateOne({ _id: url }, { emails: res.emails }, (err, succ) => {
+                item.emails.push({ "email": email, "budget": 0 });
+                product.updateOne({ _id: url }, { emails: item.emails }, (err, succ) => {
                     if (err) res.sendStatus(500);
                     res.sendStatus(302);
                 });
@@ -93,7 +92,7 @@ app.post('/fetchPrice', (req, res) => {
                 const newProduct = new product({
                     "_id": url,
                     "minPrice": ress.reply,
-                    "emails": [email],
+                    "emails": [{ "email": email, "budget": 0 }],
                     "prices": [],
                 });
                 newProduct.save((err, newprod) => {
@@ -116,26 +115,28 @@ app.listen(port, () => console.log(`Example app listening at http://localhost:${
 var workerFunction = async function () {
     var arr = product.find({}, { _id: 1, minPrice: 1 });
     arr.then((res) => {
+        if(res.length == 0 ) return 0;
         res.map(async (elem) => {
             var newPrice = Worker.checkPrices(elem);
 
             newPrice.then((res) => {
-                if (res.newPrice == false) return;
+                if (res.newPrice == false || res.newPrice == Infinity) return;
                 else {
                     console.log(elem);
                     var query = { "_id": elem._id };
                     product.findById(elem.id, (err, succ) => {
                         if (err) return console.log(err);
                         else {
-                            succ.emails.map((email) => {
-                                Gmailer.sendMessage(email, { price: res.newPrice, url: elem._id });
+                            succ.emails.map((subscribers) => {
+                                if(subscribers.budget >= res.newPrice)
+                                    Gmailer.sendMessage(subscribers.email, { price: res.newPrice, url: elem._id });
                             })
                             console.log(succ);
                         }
                     });
                     product.updateOne(query, { minPrice: res.newPrice }, (err, succ) => {
                         if (err) return console.log("err");
-                        return console.log("succ");
+                        return console.log("successfully updated ");
                     });
                     return console.log(res);
                 }
@@ -147,4 +148,4 @@ var workerFunction = async function () {
 }
 
 workerFunction();
-setInterval(workerFunction, 7200000);
+// setInterval(workerFunction, 7200000);
