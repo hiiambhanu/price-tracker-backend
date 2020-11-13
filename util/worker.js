@@ -1,32 +1,43 @@
 const Scraper = require("./scraper");
+const mongo = require("./mongo");
+const Gmailer = require("./gmailer");
+const product = mongo.product;
 
-const isNullOrUndefined = (item) =>{
-    return (item === null || item === undefined); 
-}
+exports.worker2 = async function () {
+    var today = new Date().toLocaleDateString();
+    
+    var products = product.find({}, { _id: 1, minPrice: 1, prices: 1, emails: 1 });
+    products.then((products) => {
+        if (products.length == 0) return;
 
-exports.checkPrices = (element) => {
-    return new Promise((resolve, reject) => {
-        var url = element._id;
-        var minPrice = element.minPrice;
-        var newPrice = Scraper.scrapePrice(url);
+        products.forEach(async (p) => {
 
-        newPrice.then((res) => {
-            console.log(res);
-            var p1 = parseInt(res.reply);
-            if (!isNullOrUndefined(minPrice) && p1 >= minPrice) {
-                console.log("No good news");
-                resolve({
-                    newPrice: false
-                });
-            } else {
-                resolve({
-                    newPrice: res.reply
-                });
+            var url = p._id;
+            var priceToday = await Scraper.scrapePrice(url);
+            priceToday = Number.parseInt(priceToday.reply);
+            console.info("price", priceToday);
+
+            if (p.prices == null) p.prices = [];
+            var id = p.prices.findIndex((item, index) => {
+                if (item.date == today) return true;
+            });
+            console.log("index", id);
+            if (id == -1) {
+                p.prices.push({ date: today, price: priceToday });
             }
-        }).catch((err) => {
-            reject({
-                error: err
-            })
+            else {
+                p.prices[id].price = Math.min(priceToday, p.prices[id].price);
+            }
+
+            p.emails.forEach((subscriber) => {
+                if (subscriber.budget >= priceToday && (!subscriber.lastEmail || subscriber.lastEmail.toLocaleDateString() !== new Date().toLocaleDateString())) {
+                    Gmailer.sendMessage(subscriber.email, { price: priceToday, url: url });
+                    subscriber.lastEmail = new Date();
+                }
+            });
+
+            p.save();
+            
         })
-    });
+    })
 }
