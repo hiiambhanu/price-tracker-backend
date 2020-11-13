@@ -1,8 +1,8 @@
 const cheerio = require("cheerio");
 const axios = require("axios");
 
-const isNullOrUndefined = (item) =>{
-    return (item === null || item === undefined); 
+const isNullOrUndefined = (item) => {
+    return (item === null || item === undefined);
 }
 exports.scrapePrice = (url) => {
     return new Promise((resolve, reject) => {
@@ -28,8 +28,12 @@ exports.scrapePrice = (url) => {
                     reply: reply
                 });
             })
-            .catch((err) => reject({
-                error: err
-            }));
+            .catch((err) => {
+                console.log(err);
+                reject({
+                    error: err
+                })
+            }
+            );
     });
 }

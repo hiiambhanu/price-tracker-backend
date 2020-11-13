@@ -16,11 +16,15 @@ exports.currentPrice = async (req, res) => {
     var url = req.body.url;
     if (url === null || url === undefined) res.sendStatus(400);
     let currentPrice = await Scraper.scrapePrice(url);
+
+    console.log(currentPrice.reply);
+
     res.json({ currentPrice: currentPrice.reply });
 
     let today = new Date().toLocaleDateString();
 
     var p = await product.findOne({ _id: url }, { prices: 1 });
+    if(!p) return;
     if (p.prices == null) p.prices = [];
     var id = p.prices.findIndex((item, index) => {
         if (item.date == today) return true;

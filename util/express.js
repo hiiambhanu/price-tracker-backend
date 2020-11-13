@@ -6,7 +6,7 @@ require('dotenv').config()
 const cors = require("cors");
 const path = require("path");
 app.use('/static', express.static(path.join(__dirname, 'public')))
-app.use(favicon(__dirname + '/static/favicon.png'));
+// app.use(favicon(__dirname + '/static/favicon.png'));
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
