@@ -44,7 +44,7 @@ exports.fetchPrice = (req, res) => {
     var url = req.body.url;
     var email = req.body.email;
     var budget = req.body.budget;
-    budget = 0;                     // TO REMOVE
+    
     if (url === null || url === undefined) {
         console.log("Empty URL");
         res.sendStatus(400);
