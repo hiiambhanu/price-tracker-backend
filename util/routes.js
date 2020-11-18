@@ -56,11 +56,15 @@ exports.fetchPrice = (req, res) => {
             res.sendStatus(500);
         }
         else if (!(item === null || item === undefined)) {
-            console.log("item was in the db");
+            console.log("email was in the db, updating the budget.");
             var id = item.emails.findIndex((e, id) => {
                 if (e.email == email) return true;
             });
-            if (id != -1) res.sendStatus(200);
+            if (id != -1){ 
+                res.sendStatus(200);
+                item.emails[id].budget = budget;
+                item.save();
+            }
             else {
                 item.emails.push({ "email": email, "budget": budget });
                 product.updateOne({ _id: url }, { emails: item.emails }, (err, succ) => {
